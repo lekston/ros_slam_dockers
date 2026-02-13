@@ -10,7 +10,7 @@ xhost +local:docker
 # Run the container with minimal privileges
 docker run -it --rm \
     --runtime=nvidia \
-    --gpus all \
+    --gpus=all \
     --env="DISPLAY=${DISPLAY}" \
     --env="QT_X11_NO_MITSHM=1" \
     --env="XAUTHORITY=${XAUTHORITY}" \
