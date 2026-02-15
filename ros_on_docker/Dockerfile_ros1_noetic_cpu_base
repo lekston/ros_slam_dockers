@@ -1,0 +1,70 @@
+# Start from the ROS1 Noetic base image instead of Melodic
+FROM osrf/ros:noetic-desktop-full AS ros1-noetic-cpu-base
+
+SHELL ["/bin/bash", "-c"]
+
+# Set noninteractive installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Set locale
+RUN apt-get update && apt-get install -y locales curl gnupg2 lsb-release
+RUN locale-gen en_US en_US.UTF-8
+RUN update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV TZ=Etc/UTC
+
+# Install development tools and dependencies
+RUN apt-get update && apt-get install -y \
+    vim \
+    tmux \
+    tree \
+    clang \
+    curl \
+    gnupg2 \
+    locales \
+    lsb-release \
+    python3-pip \
+    python3-catkin-tools \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a new stage for upgraded packages
+FROM ros1-noetic-cpu-base AS ros1-noetic-cpu-upgraded
+
+# Update package lists and install GTSAM (commonly required for SLAM projects)
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:borglab/gtsam-release-4.0 && \
+    apt-get update && \
+    apt-get install -y libgtsam-dev libgtsam-unstable-dev && \
+    apt-get upgrade -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install commonly required ROS packages
+RUN apt-get update && apt-get install -y \
+    ros-noetic-navigation \
+    ros-noetic-robot-localization \
+    ros-noetic-robot-state-publisher \
+    ros-noetic-velodyne-msgs \
+    ros-noetic-pcl-ros \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a workspace directory
+RUN mkdir -p /catkin_ws/src
+WORKDIR /catkin_ws
+
+# Set X11 and GUI environment variables
+ENV DISPLAY=:0
+ENV QT_X11_NO_MITSHM=1
+ENV XDG_RUNTIME_DIR=/tmp/runtime-root
+ENV DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus-session
+
+# Source ROS setup in bashrc for interactive shells
+RUN echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc
+
+# Setup entrypoint
+COPY ./ros_on_docker/ros1_cpu_entrypoint.sh /ros_entrypoint.sh
+RUN chmod +x /ros_entrypoint.sh
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["bash"] 

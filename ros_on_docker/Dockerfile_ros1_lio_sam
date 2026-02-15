@@ -1,57 +1,6 @@
-# Start from the ROS1 Noetic base image instead of Melodic
-FROM osrf/ros:noetic-desktop-full AS ros1-dev-gpu-liosam-base
-
-# TODO: prepare a GPU enabled container for LIO-SAM on ROS1
-
-SHELL ["/bin/bash", "-c"]
-
-# Set noninteractive installation
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install development tools and dependencies
-RUN apt-get update && apt-get install -y \
-    vim \
-    tmux \
-    tree \
-    clang \
-    curl \
-    gnupg2 \
-    locales \
-    lsb-release \
-    python3-pip \
-    python3-catkin-tools \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set locale
-RUN locale-gen en_US en_US.UTF-8
-RUN update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
-ENV LANG=en_US.UTF-8
-ENV TZ=Etc/UTC
-
-# Create a new stage for upgraded packages
-FROM ros1-dev-gpu-liosam-base AS ros1-dev-gpu-liosam-upgraded
-
-# Update package lists and install GTSAM (required for LIO-SAM)
-RUN apt-get update && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository -y ppa:borglab/gtsam-release-4.0 && \
-    apt-get update && \
-    apt-get install -y libgtsam-dev libgtsam-unstable-dev && \
-    apt-get upgrade -y && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install ROS packages needed for LIO-SAM
-RUN apt-get update && apt-get install -y \
-    ros-noetic-navigation \
-    ros-noetic-robot-localization \
-    ros-noetic-robot-state-publisher \
-    ros-noetic-velodyne-msgs \
-    ros-noetic-pcl-ros \
-    && rm -rf /var/lib/apt/lists/*
-
-# Final stage with LIO-SAM and Livox
-FROM ros1-dev-gpu-liosam-upgraded AS ros1-dev-gpu-liosam-final
+# Start from upgraded ROS1 Noetic CPU base image
+# Install LIO-SAM and Livox ROS Driver
+FROM ros1-noetic-cpu-upgraded AS ros1-noetic-cpu-lio-sam-final
 
 # Set up catkin workspace
 WORKDIR /catkin_ws
@@ -102,14 +51,14 @@ RUN source /opt/ros/noetic/setup.bash \
     && catkin build --start-with lio_sam
 
 # Final stage with LIO-SAM and Livox
-FROM ros1-dev-gpu-liosam-final AS ros1-dev-gpu-liosam-recording
+FROM ros1-noetic-cpu-lio-sam-final AS ros1-noetic-cpu-liosam-recording
 
 RUN apt-get update && apt-get install -y \
     nlohmann-json3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy cpp_pubsub package to the catkin workspace (TODO: rename to bag2laz)
-COPY ./cpp_pubsub_ros1/ /catkin_ws/src/cpp_pubsub/
+COPY ./ros_on_docker/cpp_pubsub_ros1/ /catkin_ws/src/cpp_pubsub/
 
 # Rebuild the catkin workspace to include the cpp_pubsub package
 RUN source /opt/ros/noetic/setup.bash \
@@ -129,7 +78,7 @@ RUN source /opt/ros/noetic/setup.bash \
 #     && echo "source /catkin_ws/devel/setup.bash" >> ~/.bashrc
 
 # Setup entrypoint
-COPY ./ros1_lio_sam_entrypoint.sh /ros_entrypoint.sh
+COPY ./ros_on_docker/ros1_cpu_entrypoint.sh /ros_entrypoint.sh
 RUN chmod +x /ros_entrypoint.sh
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
