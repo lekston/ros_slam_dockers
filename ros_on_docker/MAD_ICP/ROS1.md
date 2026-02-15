@@ -12,8 +12,16 @@ https://ntu-aris.github.io/ntu_viral_dataset/
 
 ## Build and run the docker image
 
+### GPU version
+
 ```bash
 $ ./ros_on_docker_nvidia/run_ros1_docker_gpu_mad_icp.sh
+```
+
+### CPU version
+
+```bash
+$ ./ros_on_docker/run_ros1_docker_cpu_mad_icp.sh
 ```
 
 ## Troubleshooting: OS permissions for running docker
