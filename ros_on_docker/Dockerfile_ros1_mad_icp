@@ -91,6 +91,7 @@ RUN mkdir -p /catkin_ws \
 COPY ./ros_on_docker/cpp_pubsub_ros1/ /catkin_ws/src/cpp_pubsub/
 
 # Rebuild the catkin workspace to include the cpp_pubsub package
+# NOTE: LASzip 3.4.1 + 2Gb file size fix is required (all is in 3.4.4 too but interface changed)
 RUN source /opt/ros/noetic/setup.bash \
     && source /livox_sdk/catkin_ws/devel/setup.bash \
     && cd /catkin_ws \
@@ -100,7 +101,14 @@ RUN source /opt/ros/noetic/setup.bash \
     && cd /catkin_ws \
     && catkin build
 
-# NOTE: LASzip 3.4.1 + 2Gb file size fix is required (all is in 3.4.4 too but interface changed)
+RUN source /opt/ros/noetic/setup.bash \
+    && source /livox_sdk/catkin_ws/devel/setup.bash \
+    && cd /catkin_ws \
+    && git clone https://github.com/lekston/livox2pointcloud.git ./src/livox2pointcloud \
+    && cd ./src/livox2pointcloud \
+    && git checkout noetic \
+    && cd /catkin_ws \
+    && catkin build
 
 # Create a workspace directory for user projects
 RUN mkdir -p /catkin_ws/src

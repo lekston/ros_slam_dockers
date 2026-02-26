@@ -117,6 +117,25 @@ rosrun cpp_pubsub listener /data/HILTI_2021/MAD_ICP/uhz_tracking_area_run2_resul
 
 ### Bunker DVI dataset
 
+#### Livox point cloud conversion
+
+3 consoles needed + roscore
+
+```
+source /catkin_ws/devel/setup.bash
+rosrun livox2pointcloud livox2pointcloud_node
+```
+
+```
+rosbag record /livox/imu /livox/pointcloud2 -O /data/BunkerDVI_by_Charles/data/pc_warm-up_small-room/dvi_warm_up_PC.bag
+```
+
+```
+rosbag play /data/BunkerDVI_by_Charles/data/warm-up_small-room.bag --topics /livox/lidar /livox/imu
+```
+
+#### Running MAD-ICP for Bunker DVI dataset
+
 ```
 mad_icp --data-path /data/BunkerDVI_by_Charles/data/pc_warm-up_small-room/ --estimate-path /data/BunkerDVI_by_Charles/data/pc_warm-up_small-room/output/ --dataset-config /catkin_ws/src/mad-icp/mad_icp/configurations/datasets/dvi.cfg
 ```
@@ -126,19 +145,15 @@ mad_icp --data-path /data/BunkerDVI_by_Charles/data/pc_warm-up_small-room/ --est
 rviz rviz -d src/mad-icp/mad_icp/configurations/rviz/mad_icp_rviz_odom_and_cloud.rviz
 ```
 
-
-### Livox point cloud conversion
-
+*Recording a rosbag*
 ```
-source /catkin_ws/devel/setup.bash
-rosrun livox2pointcloud livox2pointcloud_node
-
-```
-rosbag record /livox/imu /livox/pointcloud2 -O dvi_warm_up_PC.bag
+rosbag record -o /data/BunkerDVI_by_Charles/recordings/rec_warm-up_small-room.bag /cloud/current /cloud/complete  /odometry/imu
 ```
 
+
+*Conversion to MapsHD session*
 ```
-rosbag play /data/BunkerDVI_by_Charles/data/warm-up_small-room.bag --topics /livox/lidar /livox/imu
+rosrun cpp_pubsub listener /data/BunkerDVI_by_Charles/recordings/rec_warm-up_small-room_2026-02-26-09-19-17.bag /data/BunkerDVI_by_Charles/results/session_warm-up_small-room /cloud/current
 ```
 
 ## Follow-up
