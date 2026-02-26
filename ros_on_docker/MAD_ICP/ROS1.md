@@ -10,6 +10,9 @@ https://hilti-challenge.com/dataset-2021.html
 NTU Viral:
 https://ntu-aris.github.io/ntu_viral_dataset/
 
+Bunker DVI:
+https://charleshamesse.github.io/bunker-dvi-dataset/docs/download.html
+
 ## Build and run the docker image
 
 ### GPU version
