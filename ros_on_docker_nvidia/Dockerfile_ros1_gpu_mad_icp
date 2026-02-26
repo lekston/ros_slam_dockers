@@ -97,7 +97,8 @@ RUN mkdir -p /catkin_ws \
     && source /opt/ros/noetic/setup.bash \
     && mkdir build && cd build && cmake -DCOMPILE_CPP_APPS=ON ../mad_icp && make -j$(nproc) \
     && cd .. \
-    && python3 -m pip install .
+    && python3 -m pip install . \
+    && python3 -m pip install 'click<8.2' --force-reinstall
 
 # Copy cpp_pubsub package to the catkin workspace (TODO: rename to bag2laz)
 COPY ./ros_on_docker/cpp_pubsub_ros1/ /catkin_ws/src/cpp_pubsub/

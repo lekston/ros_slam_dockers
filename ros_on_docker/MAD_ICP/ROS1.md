@@ -114,3 +114,33 @@ rosbag record -o /data/HILTI_2021/MAD_ICP/uzh_tracking_area_run2_results.bag /cl
 source /catkin_ws/devel/setup.bash
 rosrun cpp_pubsub listener /data/HILTI_2021/MAD_ICP/uhz_tracking_area_run2_results_2025-09-07-15-04-37.bag /data/HILTI_2021/MAD_ICP/uhz_tracking_area_run2_session/ /cloud/current
 ```
+
+### Bunker DVI dataset
+
+```
+mad_icp --data-path /data/BunkerDVI_by_Charles/data/pc_warm-up_small-room/ --estimate-path /data/BunkerDVI_by_Charles/data/pc_warm-up_small-room/output/ --dataset-config /catkin_ws/src/mad-icp/mad_icp/configurations/datasets/dvi.cfg
+```
+
+*Visualization*
+```
+rviz rviz -d src/mad-icp/mad_icp/configurations/rviz/mad_icp_rviz_odom_and_cloud.rviz
+```
+
+
+### Livox point cloud conversion
+
+```
+source /catkin_ws/devel/setup.bash
+rosrun livox2pointcloud livox2pointcloud_node
+
+```
+rosbag record /livox/imu /livox/pointcloud2 -O dvi_warm_up_PC.bag
+```
+
+```
+rosbag play /data/BunkerDVI_by_Charles/data/warm-up_small-room.bag --topics /livox/lidar /livox/imu
+```
+
+## Follow-up
+
+TODO: add tmux startup scripts
